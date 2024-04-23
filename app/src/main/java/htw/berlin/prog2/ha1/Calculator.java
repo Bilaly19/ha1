@@ -19,6 +19,8 @@ public class Calculator {
 
     private ArrayList<Double> latestValueSave = new ArrayList<>();
     private ArrayList<String> latestOperationSave = new ArrayList<>();
+    List<Double> intermediateValues = new ArrayList<>();
+    List<String> remainingOperations = new ArrayList<>();
 
     /**
      * @return den aktuellen Bildschirminhalt als String
@@ -136,25 +138,51 @@ public class Calculator {
         if (screen.equals("Infinity")) screen = "Error";
     }
 
-    public double operationCheck(){
-        double result = latestValueSave.get(0);
-        for(int i = 0; i < latestOperationSave.size(); i++){
-            String operation = latestOperationSave.get(i);
-            double nextValue = latestValueSave.get (i+1);
-            switch (operation) {
-                case "+" : result += nextValue;
-                break;
-                case "-" : result -= nextValue;
-                break;
-                case "x" : result *= nextValue;;
-                break;
-                case "/" : result /= nextValue;;
-                if (nextValue == 0) throw new ArithmeticException("Divison by Zero");
-                break;
-                default: throw new IllegalArgumentException();
+    public void addOperation(double value, String operation) {
+        latestValueSave.add(value);
+        latestOperationSave.add(operation);
+    }
 
+
+
+    public double operationCheck() {
+
+
+        double currentValue = latestValueSave.get(0);
+        for (int i = 0; i < latestOperationSave.size(); i++) {
+            String operation = latestOperationSave.get(i);
+            double nextValue = latestValueSave.get(i + 1);
+
+            switch (operation) {
+                case "x":
+                    currentValue *= nextValue;
+                    break;
+                case "/":
+                    if (nextValue == 0) throw new ArithmeticException("Division by Zero");
+                    currentValue /= nextValue;
+                    break;
+                default:
+                    intermediateValues.add(currentValue);
+                    remainingOperations.add(operation);
+                    currentValue = nextValue;
+                    break;
             }
         }
+        intermediateValues.add(currentValue);
+
+        double result = intermediateValues.get(0);
+        for (int i = 0; i < remainingOperations.size(); i++) {
+            String operation = remainingOperations.get(i);
+            double nextValue = intermediateValues.get(i + 1);
+            if (operation.equals("+")) {
+                result += nextValue;
+            } else if (operation.equals("-")) {
+                result -= nextValue;
+            } else {
+                throw new IllegalArgumentException("Invalid operation");
+            }
+        }
+
         return result;
     }
 }
