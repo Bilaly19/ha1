@@ -1,4 +1,7 @@
 package htw.berlin.prog2.ha1;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Eine Klasse, die das Verhalten des Online Taschenrechners imitiert, welcher auf
@@ -13,6 +16,9 @@ public class Calculator {
     private double latestValue;
 
     private String latestOperation = "";
+
+    private ArrayList<Double> latestValueSave = new ArrayList<>();
+    private ArrayList<String> latestOperationSave = new ArrayList<>();
 
     /**
      * @return den aktuellen Bildschirminhalt als String
@@ -33,7 +39,7 @@ public class Calculator {
 
         if(screen.equals("0") || latestValue == Double.parseDouble(screen)) screen = "";
 
-        screen = screen + digit ;
+        screen = screen + digit;
     }
 
     /**
@@ -60,8 +66,9 @@ public class Calculator {
      * @param operation "+" für Addition, "-" für Substraktion, "x" für Multiplikation, "/" für Division
      */
     public void pressBinaryOperationKey(String operation)  {
-        latestValue = Double.parseDouble(screen);
-        latestOperation = operation;
+        latestValueSave.add(Double.parseDouble(screen));
+        latestOperationSave.add(operation);
+        screen = "0";
     }
 
     /**
@@ -74,10 +81,11 @@ public class Calculator {
     public void pressUnaryOperationKey(String operation) {
         latestValue = Double.parseDouble(screen);
         latestOperation = operation;
-        var result = switch(operation) {
-            case "√" -> Math.sqrt(Double.parseDouble(screen));
-            case "%" -> Double.parseDouble(screen) / 100;
-            case "1/x" -> 1 / Double.parseDouble(screen);
+        double result = 0.0;
+        switch(operation) {
+            case "√" -> result = Math.sqrt(Double.parseDouble(screen));
+            case "%" -> result = Double.parseDouble(screen) / 100;
+            case "1/x" -> result = 1 / Double.parseDouble(screen);
             default -> throw new IllegalArgumentException();
         };
         screen = Double.toString(result);
@@ -118,16 +126,35 @@ public class Calculator {
      * und das Ergebnis direkt angezeigt.
      */
     public void pressEqualsKey() {
-        var result = switch(latestOperation) {
-            case "+" -> latestValue + Double.parseDouble(screen);
-            case "-" -> latestValue - Double.parseDouble(screen);
-            case "x" -> latestValue * Double.parseDouble(screen);
-            case "/" -> latestValue / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
-        };
-        screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error";
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        latestValueSave.add(Double.parseDouble(screen));
+        double result = operationCheck();
+        if (result % 1 == 0){
+            screen = Integer.toString((int) result);
+        } else {
+            screen = Double.toString(result);
+        }
+        if (screen.equals("Infinity")) screen = "Error";
+    }
+
+    public double operationCheck(){
+        double result = latestValueSave.get(0);
+        for(int i = 0; i < latestOperationSave.size(); i++){
+            String operation = latestOperationSave.get(i);
+            double nextValue = latestValueSave.get (i+1);
+            switch (operation) {
+                case "+" : result += nextValue;
+                break;
+                case "-" : result -= nextValue;
+                break;
+                case "x" : result *= nextValue;;
+                break;
+                case "/" : result /= nextValue;;
+                if (nextValue == 0) throw new ArithmeticException("Divison by Zero");
+                break;
+                default: throw new IllegalArgumentException();
+
+            }
+        }
+        return result;
     }
 }
