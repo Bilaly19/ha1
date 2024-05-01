@@ -19,8 +19,8 @@ public class Calculator {
 
     private ArrayList<Double> latestValueSave = new ArrayList<>();
     private ArrayList<String> latestOperationSave = new ArrayList<>();
-    List<Double> intermediateValues = new ArrayList<>();
-    List<String> remainingOperations = new ArrayList<>();
+    private ArrayList<Double> intermediateValues = new ArrayList<>();
+    private ArrayList<String> remainingOperations = new ArrayList<>();
 
     /**
      * @return den aktuellen Bildschirminhalt als String
@@ -130,7 +130,7 @@ public class Calculator {
     public void pressEqualsKey() {
         latestValueSave.add(Double.parseDouble(screen));
         double result = operationCheck();
-        if (result % 1 == 0){
+        if (result % 1 >= 0){
             screen = Integer.toString((int) result);
         } else {
             screen = Double.toString(result);
@@ -138,15 +138,17 @@ public class Calculator {
         if (screen.equals("Infinity")) screen = "Error";
     }
 
-    public void addOperation(double value, String operation) {
-        latestValueSave.add(value);
-        latestOperationSave.add(operation);
-    }
+    // public void addOperation(double value, String operation) {
+    //   latestValueSave.add(value);
+    //    latestOperationSave.add(operation);
+    //}
 
 
 
     public double operationCheck() {
-
+        if (latestValueSave.isEmpty() || latestOperationSave.isEmpty()) {
+            throw new IllegalStateException("No operations to perform");
+        }
 
         double currentValue = latestValueSave.get(0);
         for (int i = 0; i < latestOperationSave.size(); i++) {
@@ -158,31 +160,16 @@ public class Calculator {
                     currentValue *= nextValue;
                     break;
                 case "/":
-                    if (nextValue == 0) throw new ArithmeticException("Division by Zero");
-                    currentValue /= nextValue;
+                    if (nextValue == 0) {
+                        currentValue = Double.POSITIVE_INFINITY; // Ändere hier, um Unendlichkeit zurückzugeben
+                    } else {
+                        currentValue /= nextValue;
+                    }
                     break;
                 default:
-                    intermediateValues.add(currentValue);
-                    remainingOperations.add(operation);
-                    currentValue = nextValue;
-                    break;
+                    throw new IllegalArgumentException("Unsupported operation: " + operation);
             }
         }
-        intermediateValues.add(currentValue);
-
-        double result = intermediateValues.get(0);
-        for (int i = 0; i < remainingOperations.size(); i++) {
-            String operation = remainingOperations.get(i);
-            double nextValue = intermediateValues.get(i + 1);
-            if (operation.equals("+")) {
-                result += nextValue;
-            } else if (operation.equals("-")) {
-                result -= nextValue;
-            } else {
-                throw new IllegalArgumentException("Invalid operation");
-            }
-        }
-
-        return result;
+        return currentValue; // Direktes Zurückgeben des Ergebnisses ohne Zwischenschritte
     }
 }

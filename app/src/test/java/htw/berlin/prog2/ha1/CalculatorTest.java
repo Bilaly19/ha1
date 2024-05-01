@@ -65,14 +65,14 @@ class CalculatorTest {
     void testPunktVorStrich() {
         Calculator calc = new Calculator();
 
-        calc.pressDigitKey(1);
-        calc.pressBinaryOperationKey("+");
-        calc.pressDigitKey(2);
+        calc.pressDigitKey(3);
         calc.pressBinaryOperationKey("x");
+        calc.pressDigitKey(2);
+        calc.pressBinaryOperationKey("+");
         calc.pressDigitKey(3);
         calc.pressEqualsKey();
 
-        String expected = "7";
+        String expected = "9";
         String actual = calc.readScreen();
 
         assertEquals(expected, actual);
