@@ -146,9 +146,7 @@ public class Calculator {
 
 
     public double operationCheck() {
-        if (latestValueSave.isEmpty() || latestOperationSave.isEmpty()) {
-            throw new IllegalStateException("No operations to perform");
-        }
+
 
         double currentValue = latestValueSave.get(0);
         for (int i = 0; i < latestOperationSave.size(); i++) {
@@ -160,16 +158,31 @@ public class Calculator {
                     currentValue *= nextValue;
                     break;
                 case "/":
-                    if (nextValue == 0) {
-                        currentValue = Double.POSITIVE_INFINITY; // Ändere hier, um Unendlichkeit zurückzugeben
-                    } else {
-                        currentValue /= nextValue;
-                    }
+                    currentValue /= nextValue;
                     break;
                 default:
-                    throw new IllegalArgumentException("Unsupported operation: " + operation);
+                    if(screen.equals("Infinity")) screen = "Error";
+                    intermediateValues.add(currentValue);
+                    remainingOperations.add(operation);
+                    currentValue = nextValue;
+                    break;
             }
         }
-        return currentValue; // Direktes Zurückgeben des Ergebnisses ohne Zwischenschritte
+        intermediateValues.add(currentValue);
+
+        double result = intermediateValues.get(0);
+        for (int i = 0; i < remainingOperations.size(); i++) {
+            String operation = remainingOperations.get(i);
+            double nextValue = intermediateValues.get(i + 1);
+            if (operation.equals("+")) {
+                result += nextValue;
+            } else if (operation.equals("-")) {
+                result -= nextValue;
+            } else {
+                throw new IllegalArgumentException("Invalid operation");
+            }
+        }
+
+        return result;
     }
 }
